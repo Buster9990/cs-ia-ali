@@ -2,20 +2,19 @@ from flask import Flask, redirect, request, render_template, url_for
 
 app = Flask(__name__)
 
+# define variables
 max_temp = 90
 min_temp = 50
 min_boundary = 0
 max_boundary = 120
-password = ""
-
 water_pipe_engaged = False
 emergency_pipe = False
-
 password='albayan'
-print(password)
 
+# website goes to this by default
 @app.route("/")
 def index():
+    # goes to
     return redirect(url_for("home"))
 
 @app.route("/main/", methods=['GET','POST'])
