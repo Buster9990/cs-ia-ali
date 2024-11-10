@@ -4,6 +4,8 @@ app = Flask(__name__)
 
 max_temp = 90
 min_temp = 50
+min_boundary = 0
+max_boundary = 120
 password = ""
 
 water_pipe_engaged = False
@@ -23,7 +25,12 @@ def home():
         if request.form.keys().__contains__('gotomainpage'):
             return render_template("control.html")
         if request.form.get('send') == 'Submit' and request.form.get('temptxt') != None:
-            temp_input = int(request.form.get('temptxt'))
+            try:
+                temp_input = int(request.form.get('temptxt'))
+            except ValueError as e:
+                return render_template("wrong-input.html")
+            if temp_input < min_boundary or temp_input > max_boundary:
+                return render_template('shut-and-call-manager.html')
             if temp_input > max_temp:
                 if water_pipe_engaged:
                     if emergency_pipe:
