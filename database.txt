@@ -1,0 +1,3 @@
+55 / Temperature is within safe range
+100 / Temperature is high, engage water pipe.
+120 / Engage emergency pipe.
