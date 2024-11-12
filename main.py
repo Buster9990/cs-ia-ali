@@ -86,4 +86,4 @@ def judge_temp(temp_input):
             return render_template('temp-low.html', value="Temperature is too low, call manager.")
 
 if __name__ == "__main__":
-    app.run("0.0.0.0:8000")
+    app.run(host="0.0.0.0", port=8000)
