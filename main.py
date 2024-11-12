@@ -1,12 +1,13 @@
 from flask import Flask, redirect, request, render_template, url_for
 import database
+import datetime
 
 app = Flask(__name__)
 
 # define variables
 max_temp = 90
 min_temp = 50
-min_boundary = 0
+min_boundary = 20
 max_boundary = 120
 water_pipe_engaged = False
 emergency_pipe = False
@@ -24,18 +25,30 @@ def home():
     if request.method == 'POST':
         if request.form.keys().__contains__('gotomainpage'):
             return render_template("control.html")
+        elif request.form.keys().__contains__('viewhistory'):
+            return render_template("view_history.html", data=database.read_all())
+        elif request.form.keys().__contains__('pipe_engaged'):
+            water_pipe_engaged = True
+            return render_template("control.html")
+        elif request.form.keys().__contains__('pipe_not_engaged'):
+            water_pipe_engaged = False
+            return render_template("control.html")
+        elif request.form.keys().__contains__('emergency_pipe_engaged'):
+            water_pipe_engaged = True
+            emergency_pipe = True
+            return render_template("control.html")
         if request.form.get('send') == 'Submit' and request.form.get('temptxt') != None:
             try:
                 temp_input = int(request.form.get('temptxt'))
             except ValueError as e:
                 return render_template("wrong-input.html")
-            database.save_input(temp_input)
+            database.save_input(temp_input, water_pipe_engaged, emergency_pipe, datetime.datetime.utcnow() + datetime.timedelta(hours=3))
             return judge_temp(temp_input)
 
     if request.method == "POST":
         print(request.form.to_dict())
         if request.form.get('passwordtxt') == password:
-            return render_template("control.html")
+            return render_template("pipe-engaged.html")
     return render_template("home.html")
 
 def judge_temp(temp_input):
@@ -65,8 +78,12 @@ def judge_temp(temp_input):
         database.save_result("Temperature is within safe range")
         return render_template('temp-right.html')
     else:
-        database.save_result("Temperature is too low.")
-        return render_template('temp-low.html')
+        if water_pipe_engaged:
+            database.save_result("Disengage pipe, temperature is low.")
+            return render_template('temp-low.html', value="Disengage pipe, temperature is too low.")
+        else:
+            database.save_result("Temperature is too low, call manager.")
+            return render_template('temp-low.html', value="Temperature is too low, call manager.")
 
 if __name__ == "__main__":
     app.run()

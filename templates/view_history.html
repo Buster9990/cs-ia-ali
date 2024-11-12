@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+	table, th, td {
+	border: 1px solid;
+}
+</style>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+
+<tbody>
+	<form method="post">
+		<table>
+			<tr>
+				<th>Date & Time</th>
+				<th>Temperature</th>
+				<th>Result</th>
+				<th>Pipes</th>
+			</tr>
+			{%for r1, r2, r3, r4 in data%}
+				<tr>
+					<td>{{r1}}</td>
+					<td>{{r2}}</td>
+					<td>{{r4}}</td>
+					<td>{{r3}}</td>
+
+				</tr>
+			{%endfor%}
+		</table>
+		<button name="gotomainpage">Back</button>
+	</form>
+</tbody>
+
+</html>
