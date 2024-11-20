@@ -34,6 +34,9 @@ def home():
     # POST method is when input is received from the user
     if request.method == 'POST':
         # Button to go to main page is clicked.
+        if request.form.keys().__contains__('backtopipeselect'):
+            # Goes to control page
+            return render_template("pipe-engaged.html")
         if request.form.keys().__contains__('gotomainpage'):
             # Goes to control page
             return render_template("control.html")
@@ -44,6 +47,7 @@ def home():
         # Right after login, the user hits the water pipe engaged button
         elif request.form.keys().__contains__('pipe_engaged'):
             # Save it
+            emergency_pipe = False
             water_pipe_engaged = True
             # Go to main page
             return render_template("control.html")
@@ -51,6 +55,7 @@ def home():
         elif request.form.keys().__contains__('pipe_not_engaged'):
             # Set it to off
             water_pipe_engaged = False
+            emergency_pipe = False
             # go to main page
             return render_template("control.html")
         # Right after login, the user hits emergency pipe engaged button.
@@ -81,23 +86,31 @@ def home():
     # If password is incorrect, asks for it again
     return render_template("home.html")
 
+# Checks the temperature of the thing and shows the response to it. Saves the response to the database with the input.
 def judge_temp(temp_input):
     # Allows use for these global variables inside the functions.
     global water_pipe_engaged, emergency_pipe
+    # If dangerously low or high, immediate shut down and call manager.
     if temp_input < min_boundary or temp_input > max_boundary:
         database.save_result("Shut down and call manager")
         return render_template('shut-and-call-manager.html')
+    # Temperature is getting dangerously high
     if temp_input > max_temp:
         if water_pipe_engaged:
+            # This is an emergency if the pipe is engaged
             if emergency_pipe:
+                # If the emergency pipe is engaged, something is wrong. Sound the alarm.
                 database.save_result("Call emergency, heat not going down even after using emergency pipe.")
                 return render_template('emergency.html')
-            emergency_pipe = True
-            database.save_result("Engage emergency pipe.")
-            return render_template('emergency-pipe.html')
-        water_pipe_engaged = True
-        database.save_result("Temperature is high, engage water pipe.")
-        return render_template('temp-high.html')
+            else:
+                emergency_pipe = True
+                database.save_result("Engage emergency pipe.")
+                return render_template('emergency-pipe.html')
+        else:
+            # Water pipe not engaged and temperature is high. Engage the pipe.
+            water_pipe_engaged = True
+            database.save_result("Temperature is high, engage water pipe.")
+            return render_template('temp-high.html')
     elif temp_input == max_temp:
         if water_pipe_engaged:
             database.save_result("Temperature not decreasing, engage emergency pipe.")
